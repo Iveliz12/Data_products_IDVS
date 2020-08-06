@@ -1,0 +1,74 @@
+---
+title: "DDP Final assigment"
+author: "Irving Veliz"
+date: "8/6/2020"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Reproducible Pitch
+
+For this assignment I have created a shiny app and a presentation for reproducible results. The link to the app is https://iveliz12.shinyapps.io/Mtcars_analize/ and the code can be found at GitHub (https://github.com/Iveliz12/Data_products_IDVS). The app shows the comparison between of mpg (miles per galon) and variables like cylinders, mothor shape and transmission. 
+
+## Introduction
+
+The data set that is loaded is mtcars.
+
+```{r, comment=""}
+head(mtcars)
+```
+
+## ui.R code
+
+```{r echo=TRUE, warning=FALSE, message=FALSE, eval=FALSE}
+library(shiny)
+shinyUI(fluidPage(
+    titlePanel("mtcar Dataset - Automotive efficiency"),
+    
+    sidebarPanel(
+        
+        selectInput("variable", "Variable:", 
+                    c("Cylinders" = "cyl",
+                      "Transmission" = "am",
+                      "motor shape"="vs"))
+    ),
+    
+    mainPanel(
+        # Output: Formatted text for caption ----
+        h3(textOutput("caption")),
+        
+        # Output: Plot of the requested variable against mpg ----
+        plotOutput("mpgPlot")
+    )
+))
+```
+
+
+## server.R code
+
+```{r echo=TRUE, warning=FALSE, message=FALSE, eval=FALSE}
+library(shiny)
+library(plotly)
+carData <- mtcars
+carData$am <- factor(carData$am, labels = c("Automatic", "Manual"))
+carData$cyl <- factor(carData$cyl, labels = c("Four", "Six","Eight"))
+carData$vs <- factor(carData$vs, labels = c("V-sahpe", "straight"))
+shinyServer(function(input, output) {
+    
+    formulaText <- reactive({
+        paste("mpg vs ", input$variable)
+    })
+    
+    output$caption <- renderText({
+        formulaText()
+    })
+    output$mpgPlot <- renderPlot({
+        ggplot(carData, aes_string(y=input$variable, x="mpg")) + geom_boxplot()
+    })
+    
+})
+```
+
